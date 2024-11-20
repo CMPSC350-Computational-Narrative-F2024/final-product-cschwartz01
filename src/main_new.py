@@ -30,7 +30,7 @@ def generate_story_response(player_input, story_context):
         top_p=1,
         max_tokens=1500,
         n=1,
-        stream=True
+        # stream=True I'll figure this out later
     )
     result = response.choices[0].message.content.strip()
     return result 
@@ -61,6 +61,7 @@ def character_creation():
         print(f"You are a {player_role} named {player_name}.")
         appearance = (f"You are a {player_role}.Your age, hair and eye color are all random.")
         generate_image(appearance, client)
+    return appearance
 
 def main():
     print("Welcome to the game!")
@@ -69,15 +70,21 @@ def main():
     player_character = character_creation()
     print("You are now ready to begin your adventure!")
 
-    # while True:
-    #     print("\n" + story_context)
-    #     player_input = input("What do you want to do? ")
+    story_context = """You live in the vast and ancient world of Middle-earth, lands of unmatched beauty and peril stretch across mountains,forests, and plains, each harboring its own legends and mysteries. From the rolling hills of the Shire, where peace and simplicity reign, to the fiery chasms 
+        of Mount Doom, where evil stirs in shadow, the world is shaped by the constant struggle between light and darkness. Amid these landscapes, 
+        dwarven halls glitter beneath towering peaks, elven realms shimmer with timeless magic, and human cities rise as bastions of hope against 
+        the creeping forces of despair. Every stone and tree bears the weight of history, waiting for new heroes to carve their stories into the 
+        tapestry of the world."""
 
-    #     if player_input.lower() in ["quit", "exit"]:
-    #         print("Goodbye!")
-    #         break
+    while True:
+        print("\n" + story_context)
+        player_input = input("What do you want to do? ")
+
+        if player_input.lower() in ["quit", "exit"]:
+            print("Goodbye!")
+            break
             
-    #     story_context = generate_story_response(player_input, story_context)
+        story_context = generate_story_response(player_input, story_context)
 
 if __name__ == "__main__":
     main()
