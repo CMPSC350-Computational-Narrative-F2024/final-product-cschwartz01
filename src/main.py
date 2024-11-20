@@ -16,8 +16,24 @@ def load_file(filename: str) -> str:
     with open(filename, "r") as file:
         return file.read()
 
-# def get_genre() -> str:
-#     return input("What genre do you want to write in? ")
+def get_genre() -> str:
+    genre = input("Puzzle, Horror, Fantasy, or Sci Fi? ")
+    if genre.lower in ["puzzle"]:
+        print("You have chosen the puzzle genre.")
+        prompt = load_file("data/puzzle_prompt.txt")
+    elif input == "Horror":
+        prompt = load_file("data/horror_prompt.txt")
+    elif input == "Fantasy":
+        prompt = load_file("data/fantasy_prompt.txt")
+    elif input == "Sci Fi":
+        prompt = load_file("data/scifi_prompt.txt")
+    else:
+        print("Invalid input. Please try again.")
+        get_genre()
+    return prompt
+
+def start_game() -> str:
+    return input("Type 'start' to begin the game: ")
 
 def get_user_choice() -> str:
     return input("What do you want to do? ")
@@ -26,32 +42,35 @@ def generate_story(prompt: str, user_choice: str) -> str:
     response = openai.chat.completions.create(
         model="gpt-4",
         messages=[
-            {"role": "system", "content": "You are a writer for text-based adventure games. Use the user input of {user_choice} to continue the story."},
+            {"role": "system", "content": "You are a writer for text-based adventure games."},
             # {"role": "user", "content": f"prompt"},
             # {"role": "user", "content": user_choice}
         ],
         temperature=0.7,
         top_p=1,
         max_tokens=1500,
-        n=1
+        n=1,
     )
     result = response.choices[0].message.content.strip()
-    return result
-
-def chat_history():
-    result = result
     with open("data/chat_history.md", "a") as file:
         file.write(result + "\n")
+    return result
 
 def main():
     prompt = load_file("data/prompt.txt")
+    print("Welcome to [insert game name here]! Type 'exit' or 'quit' to leave the game.")
     while True:
-        # print(prompt)
+        # genre = get_genre()
+        # if genre() != None:
+        #     prompt = generate_story(genre(), user_choice)
+        print()
         user_choice = get_user_choice()
         if user_choice.lower() in ["exit", "quit"]:
+            with open("data/chat_history.md", "w") as file:
+                file.write("")
             break
         prompt = generate_story(prompt, user_choice)
-        print(f"prompt = {prompt}")
+        print(prompt)
 
 if __name__ == "__main__":
     main()
