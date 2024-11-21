@@ -1,5 +1,6 @@
 import os
 import requests
+import random
 from openai import OpenAI
 from dotenv import dotenv_values
 
@@ -44,6 +45,17 @@ def generate_story_response(player_input, story_context, chat_history):
     result = response.choices[0].message.content.strip()
     return result
 
+def get_genre() -> str:
+    genre = input("Would you like to play a fantasy, sci-fi, or realistic game? ")
+    return genre
+
+def get_random_prompt():
+    prompts_file = open("data/prompts.txt", "r")
+    data = prompts_file.read()
+    prompts_list = data.split("\n")
+    random_prompt = random.choice(prompts_list)
+    return random_prompt
+
 def generate_image(appearance, client):
     '''Generates an image based on the player's appearance.'''
     image_generator = client.images.generate(
@@ -76,21 +88,36 @@ def character_creation():
 
 def main():
     '''Main function to run the game.'''
-    
+
     print("Welcome to the game!")
     print("Type your actions and see how the story unfolds. Type quit to exit. \n")
 
+    genre = get_genre()
+    if genre.lower() == "fantasy":
+        story_context = ''' You live in the kingdom of Eldravia, a lush and mountainous realm where the mists of 
+            of the peaks are said to carry the whispers of ancient gods, and the valleys are alive with bioluminescent 
+            flora that glow brighter under the gaze of the twin moons. Eldravia's heart lies in Veilspire, a city carved into a 
+            towering cliff, where the crystalline palace of the Crescent Throne houses a ruler whose mysterious lineage grants 
+            them the power to command the elements.
+            '''
+    elif genre.lower() == "sci-fi":
+        story_context = '''In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around 
+            dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of 
+            ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets.
+            '''
+    elif genre.lower() == "realistic":
+        story_context = ''' The town of Maplebrook is a quiet suburban haven where every street feels like a scene from a postcard, 
+            lined with neatly trimmed hedges and mailboxes painted with personal touches. Its heart is the old-fashioned downtown, where a 
+            family-run diner, a cozy bookstore, and a quirky antique shop form the backdrop of everyday routines. Life here is slow and 
+            predictable, yet the bonds between neighbors and the small, heartfelt dramas of daily life give Maplebrook its charm and meaning.
+            '''
+    
     # player_character = character_creation()
     print("You are now ready to begin your adventure!")
 
-    story_context = """You live in the vast and ancient world of Middle-earth, lands of unmatched beauty and peril stretch across mountains,forests, and plains, each harboring its own legends and mysteries. From the rolling hills of the Shire, where peace and simplicity reign, to the fiery chasms 
-        of Mount Doom, where evil stirs in shadow, the world is shaped by the constant struggle between light and darkness. Amid these landscapes, 
-        dwarven halls glitter beneath towering peaks, elven realms shimmer with timeless magic, and human cities rise as bastions of hope against 
-        the creeping forces of despair. Every stone and tree bears the weight of history, waiting for new heroes to carve their stories into the 
-        tapestry of the world."""
-
     while True:
         print("\n" + story_context)
+        print("\n" + get_random_prompt())
         player_input = input("\n What do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
