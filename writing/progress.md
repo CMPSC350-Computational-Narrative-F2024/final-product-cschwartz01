@@ -8,6 +8,7 @@ TODO: Titles are the most fun
 
 TODO: Provide a 3-5 sentence description of your progress to this point. What has been
 difficult? What has been enjoyable? Has your concept changed or shifted in any meaningful way?
+- for some reason sometimes the LLM would create the player's choice so I had to specify in the prompt to only follow what the variable `player_input` supplied
 
 ## Peer Feedback
 
