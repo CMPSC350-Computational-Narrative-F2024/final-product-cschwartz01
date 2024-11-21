@@ -14,11 +14,20 @@ OPEN_AI_ORG = CONFIG["ORG"] or os.environ["OPEN_AI_ORG"]
 client.api_key = OPEN_AI_KEY
 client.organization = OPEN_AI_ORG
 
-def generate_story_response(player_input, story_context):
+def load_file(filename: str) -> str:
+    with open(filename, "r") as file:
+        return file.read()
+
+def generate_story_response(player_input, story_context, chat_history):
+    '''Generates a response to the player's input based on the current story context and chat history.'''
+
     prompt = f'''
         The following is a text-based adventure game. Continue the story based on the player's choice. 
-        Stort context: {story_context}
+        Story context: {story_context}
         Player's choice: {player_input}
+        Do not generate the player's choice, only follow what {player_input} leads to.
+        You will be given the chat history to help you continue the story and allow for the story to change based on the player's previous choices
+        and actions. This chat history is {chat_history}.
         '''
     response = client.chat.completions.create(
         model="gpt-4",
@@ -33,9 +42,10 @@ def generate_story_response(player_input, story_context):
         # stream=True I'll figure this out later
     )
     result = response.choices[0].message.content.strip()
-    return result 
+    return result
 
 def generate_image(appearance, client):
+    '''Generates an image based on the player's appearance.'''
     image_generator = client.images.generate(
         model = "dall-e-3",
         prompt = f"Generate an imaage that represents the following character: {appearance}",
@@ -46,6 +56,7 @@ def generate_image(appearance, client):
     print(f"Here is an image that represents you: {img_url}")
 
 def character_creation():
+    '''Creates a character based on the player's input.'''
     player_name = input("What is your name? ")
     player_role = input("WOuld you like to be a wizard, knight, elf, bard, or rogue? ")
     change_appearance = input("Would you like to customize your appearance? (Yes/No) ")
@@ -64,10 +75,12 @@ def character_creation():
     return appearance
 
 def main():
+    '''Main function to run the game.'''
+    
     print("Welcome to the game!")
     print("Type your actions and see how the story unfolds. Type quit to exit. \n")
 
-    player_character = character_creation()
+    # player_character = character_creation()
     print("You are now ready to begin your adventure!")
 
     story_context = """You live in the vast and ancient world of Middle-earth, lands of unmatched beauty and peril stretch across mountains,forests, and plains, each harboring its own legends and mysteries. From the rolling hills of the Shire, where peace and simplicity reign, to the fiery chasms 
@@ -78,13 +91,18 @@ def main():
 
     while True:
         print("\n" + story_context)
-        player_input = input("What do you want to do? ")
+        player_input = input("\n What do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
             print("Goodbye!")
+            with open("data/chat_history.md", "w") as file:
+                file.write("")
             break
             
-        story_context = generate_story_response(player_input, story_context)
+        story_context = generate_story_response(player_input, story_context, "data/chat_history.md")
+
+        with open("data/chat_history.md", "a") as file:
+            file.write(story_context + "\n")
 
 if __name__ == "__main__":
     main()
