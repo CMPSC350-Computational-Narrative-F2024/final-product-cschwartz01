@@ -49,8 +49,14 @@ def get_genre() -> str:
     genre = input("Would you like to play a fantasy, sci-fi, or realistic game? ")
     return genre
 
-def get_random_prompt():
-    prompts_file = open("data/prompts.txt", "r")
+def get_random_prompt(genre):
+    if genre.lower() == "fantasy":
+        prompts_file = open("data/fantasy_prompts.txt", "r")
+    elif genre.lower() == "sci-fi":
+        prompts_file = open("data/scifi_prompts.txt", "r")
+    elif genre.lower() == "realistic":
+        prompts_file = open("data/realistic_prompts.txt", "r")
+    # prompts_file = open("data/prompts.txt", "r")
     data = prompts_file.read()
     prompts_list = data.split("\n")
     random_prompt = random.choice(prompts_list)
@@ -70,7 +76,7 @@ def generate_image(appearance, client):
 def character_creation():
     '''Creates a character based on the player's input.'''
     player_name = input("What is your name? ")
-    player_role = input("WOuld you like to be a wizard, knight, elf, bard, or rogue? ")
+    player_role = input("Would you like to be a wizard, knight, elf, bard, or rogue? ")
     change_appearance = input("Would you like to customize your appearance? (Yes/No) ")
     if change_appearance.lower() == "yes":
         hair_color = input("What color is your hair? ")
@@ -117,7 +123,7 @@ def main():
 
     while True:
         print("\n" + story_context)
-        print("\n" + get_random_prompt())
+        print("\n" + get_random_prompt(genre))
         player_input = input("\n What do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
