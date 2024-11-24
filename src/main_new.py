@@ -73,10 +73,17 @@ def generate_image(appearance, client):
     img_url = image_generator.data[0].url
     print(f"Here is an image that represents you: {img_url}")
 
-def character_creation():
+def character_creation(genre):
     '''Creates a character based on the player's input.'''
-    player_name = input("What is your name? ")
-    player_role = input("Would you like to be a wizard, knight, elf, bard, or rogue? ")
+    if genre.lower() == "fantasy":
+        player_name = input("What is your name? ")
+        player_role = input("Would you like to be a wizard, knight, elf, bard, or rogue? ")
+    elif genre.lower() == "sci-fi": 
+        player_name = input("What is your name? ")
+        player_role = input("Would you like to be a space pirate, starship pilot, scientist, rebel leader, cyborg, or engineer? ")
+    elif genre.lower() == "realistic":          
+        player_name = input("What is your name? ")
+        player_role = input("Would you like to be a barista, shopkeeper, teacher, librarian, or detective? ")
     change_appearance = input("Would you like to customize your appearance? (Yes/No) ")
     if change_appearance.lower() == "yes":
         hair_color = input("What color is your hair? ")
@@ -102,11 +109,13 @@ def main():
     if genre.lower() == "fantasy":
         story_context = "You live in the kingdom of Eldravia, a lush and mountainous realm where the mists of of the peaks are said to carry the whispers of ancient gods, and the valleys are alive with bioluminescent flora that glow brighter under the gaze of the twin moons. Eldravia's heart lies in Veilspire, a city carved into a towering cliff, where the crystalline palace of the Crescent Throne houses a ruler whose mysterious lineage grants them the power to command the elements"
     elif genre.lower() == "sci-fi":
-        story_context = "In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets.""
+        story_context = "In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets."
     elif genre.lower() == "realistic":
         story_context = "The town of Maplebrook is a quiet suburban haven where every street feels like a scene from a postcard, lined with neatly trimmed hedges and mailboxes painted with personal touches. Its heart is the old-fashioned downtown, where a family-run diner, a cozy bookstore, and a quirky antique shop form the backdrop of everyday routines. Life here is slow and predictable, yet the bonds between neighbors and the small, heartfelt dramas of daily life give Maplebrook its charm and meaning."
     
-    # player_character = character_creation()
+    player_character = character_creation(genre)
+    with open("data/chat_history.md", "a") as file:
+            file.write(player_character + "\n")
     print("You are now ready to begin your adventure!")
 
     while True:
