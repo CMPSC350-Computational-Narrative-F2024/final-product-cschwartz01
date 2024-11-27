@@ -3,9 +3,17 @@ import requests
 import random
 from openai import OpenAI
 from dotenv import dotenv_values
+import rich
+from rich.console import Console
+from rich.panel import Panel
+from rich.text import Text
+from rich.box import Box
 
-client = OpenAI()
+# Set up rich console
+console = Console()
+
 # Set up OpenAI credentials
+client = OpenAI()
 
 CONFIG = dotenv_values(".env")
 
@@ -49,6 +57,17 @@ def get_genre() -> str:
     genre = input("Would you like to play a fantasy, sci-fi, or realistic game? ")
     return genre
 
+def get_random_character(player_name, player_role, genre):
+    hair = ["black", "brown", "blonde", "red", "gray", "white", "blue", "green", "purple", "pink", "orange", "rainbow"]
+    random_hair = random.choice(hair)
+    eye = ["brown", "blue", "green", "hazel", "gray", "black", "amber", "red", "pink", "purple", "yellow", "orange", "rainbow"]
+    random_eye = random.choice(eye)
+    gender = ["male", "female", "non-binary", "genderfluid", "agender"]
+    random_gender = random.choice(gender)
+    age = random.randint(15, 85)
+    random_character = f"{age} year old {random_gender} {player_role} named {player_name} with {random_hair} hair and {random_eye} eyes, existing within a {genre} world."
+    return random_character
+
 def get_random_prompt(genre):
     if genre.lower() == "fantasy":
         prompts_file = open("data/fantasy_prompts.txt", "r")
@@ -62,16 +81,27 @@ def get_random_prompt(genre):
     random_prompt = random.choice(prompts_list)
     return random_prompt
 
-def generate_image(appearance, client):
-    '''Generates an image based on the player's appearance.'''
+def generate_image(description, client):
+    '''Generates an image based on the given description.'''
     image_generator = client.images.generate(
         model = "dall-e-3",
-        prompt = f"Generate an imaage that represents the following character: {appearance}",
+        prompt = f"Generate an image to accompany the following description: {description}",
         size = "1024x1024",
         n = 1
     )
     img_url = image_generator.data[0].url
-    print(f"Here is an image that represents you: {img_url}")
+    print(f"\n Here is an image: {img_url}")
+
+def generate_character_image(appearance, client):
+    '''Generates an image based on the given character appearance.'''
+    image_generator = client.images.generate(
+        model = "dall-e-3",
+        prompt = f"Generate an image for a character design without any letters or words. The character is a {appearance}. The image should be a portrait and in a style that is similar to that of Dungeons and Dragons handbooks.",
+        size = "1024x1024",
+        n = 1
+    )
+    img_url = image_generator.data[0].url
+    print(f"\n Here is an image that represents your character: {img_url}")
 
 def character_creation(genre):
     '''Creates a character based on the player's input.'''
@@ -90,21 +120,27 @@ def character_creation(genre):
         eye_color = input("What color are your eyes? ")
         gender = input("What is your gender? ")
         age = input("How old are you? ")
-        appearance = (f"You are a {age} year old {player_role} named {player_name} with {hair_color} hair and {eye_color} eyes.")
-        print(appearance)
-        generate_image(appearance, client)
+        appearance = (f"{age} year old {gender} {player_role} named {player_name} with {hair_color} hair and {eye_color} eyes, existing within a {genre} world.")
+        generate_character_image(appearance, client)
     else:
-        print(f"You are a {player_role} named {player_name}.")
-        appearance = (f"You are a {player_role}.Your age, hair and eye color are all random.")
-        generate_image(appearance, client)
+        appearance = get_random_character(player_name, player_role, genre)
+        print(appearance)
+        generate_character_image(appearance, client)
     return appearance
 
 def main():
     '''Main function to run the game.'''
 
-    print("Welcome to the game!")
-    print("Type your actions and see how the story unfolds. Type quit to exit. \n")
+    print()
+    # title option 1
+    console.rule("[bold green]Welcome to Textfall", align = "center")
 
+    # title option 2
+    text = Text("Welcome to Textfall", style="bold green", justify="center")
+    console.print(Panel(text))
+
+    print("Type your actions and see how the story unfolds. Type quit to exit. \n")
+    
     genre = get_genre()
     if genre.lower() == "fantasy":
         story_context = "You live in the kingdom of Eldravia, a lush and mountainous realm where the mists of of the peaks are said to carry the whispers of ancient gods, and the valleys are alive with bioluminescent flora that glow brighter under the gaze of the twin moons. Eldravia's heart lies in Veilspire, a city carved into a towering cliff, where the crystalline palace of the Crescent Throne houses a ruler whose mysterious lineage grants them the power to command the elements"
@@ -112,15 +148,20 @@ def main():
         story_context = "In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets."
     elif genre.lower() == "realistic":
         story_context = "The town of Maplebrook is a quiet suburban haven where every street feels like a scene from a postcard, lined with neatly trimmed hedges and mailboxes painted with personal touches. Its heart is the old-fashioned downtown, where a family-run diner, a cozy bookstore, and a quirky antique shop form the backdrop of everyday routines. Life here is slow and predictable, yet the bonds between neighbors and the small, heartfelt dramas of daily life give Maplebrook its charm and meaning."
-    
-    player_character = character_creation(genre)
-    with open("data/chat_history.md", "a") as file:
-            file.write(player_character + "\n")
+    elif genre.lower() == "quit":
+        print("Goodbye!")
+        return
+
+    # player_character = character_creation(genre)
+    # with open("data/chat_history.md", "a") as file:
+    #         file.write(player_character + "\n")
     print("You are now ready to begin your adventure!")
 
+    # generate_image(story_context, client)
+
     while True:
-        print("\n" + story_context)
-        print("\n" + get_random_prompt(genre))
+        console.print("\n" + story_context)
+        console.print("\n" + get_random_prompt(genre))
         player_input = input("\n What do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
