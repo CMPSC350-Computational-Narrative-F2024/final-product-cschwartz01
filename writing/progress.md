@@ -18,7 +18,7 @@ Questions I have for a peer (Aria)
 
 ### Unstructured peer feedback
 
-Alish says: "I think that Charlie's project is going to be fun! I tried something similar when we were on twine, but not to this degree. It will be interesting to see how the data is collected and used."
+From Aria: I think Charlie's game is extremely well developed in terms of technicality. The way that they incorporated the LLM API into their game and actually based their game on the player's input was something I initially wanted to do, but thought too difficult. Therefore, I feel Charlie's successful implementation is quite impressive. I would want to know more about if there is an ending developed into this narrative, as I think this is a game that could go on forever if the player just keeps on making choices, and it could only be up to the player to end the game based on their choices as well.
 
 ## Persisting challenges
 
