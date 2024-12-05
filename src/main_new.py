@@ -3,7 +3,8 @@ import requests
 import random
 from openai import OpenAI
 from dotenv import dotenv_values
-import rich
+import shutil
+import json
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -23,9 +24,43 @@ OPEN_AI_ORG = CONFIG["ORG"] or os.environ["OPEN_AI_ORG"]
 client.api_key = OPEN_AI_KEY
 client.organization = OPEN_AI_ORG
 
+SAVE_FILE = "game_save.json" # save game state to this file
+
 def load_file(filename: str) -> str:
     with open(filename, "r") as file:
         return file.read()
+    
+def save_game_state(state):
+    '''Saves the game state to a JSON file.'''
+    with open(SAVE_FILE, "w") as file:
+        json.dump(state, file)
+    save_chat_history(state["chat_history"])
+    print("Game saved!")
+
+def save_chat_history(chat_history):
+    '''Saves the chat history to a markdown file.'''
+    with open("data/chat_history.md", "w") as file:
+        file.writelines(chat_history)
+
+def load_chat_history():
+    if os.path.exists("data/chat_history.md"):
+        with open("data/chat_history.md", "r") as file:
+            return file.readlines()
+    else: 
+        return [] # return empty list if file does not exist
+
+def load_game_state():
+    '''Loads the game state from a JSON file.'''
+    if os.path.exists(SAVE_FILE):
+        with open(SAVE_FILE, "r") as file:
+            state = json.load(file)
+        # load chat history from md file
+        state["chat_history"] = load_chat_history()
+        print("Game loaded!")
+        return state
+    else:
+        print("No saved game found. Starting a new game.")
+        return None
 
 def generate_story_response(player_input, story_context, chat_history):
     '''Generates a response to the player's input based on the current story context and chat history.'''
@@ -100,8 +135,23 @@ def generate_character_image(appearance, client):
         size = "1024x1024",
         n = 1
     )
+    print(f"Appearance: {appearance}")
     img_url = image_generator.data[0].url
+    print("Image URL retrieved")
     print(f"\n Here is an image that represents your character: {img_url}")
+    return img_url
+
+def save_image(img_url, output_folder):
+    '''Saves the image to the output folder.'''
+    output_folder = "images"
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    img_data = requests.get(img_url).content
+    file_name = os.path.join(output_folder, f"character.png") # puts file in output_folder dir
+    with open(file_name, "wb") as file:
+        file.write(img_data)
+        print(f"Saved image to {file_name}")
+    return file_name
 
 def character_creation(genre):
     '''Creates a character based on the player's input.'''
@@ -114,18 +164,16 @@ def character_creation(genre):
     elif genre.lower() == "realistic":          
         player_name = input("What is your name? ")
         player_role = input("Would you like to be a barista, shopkeeper, teacher, librarian, or detective? ")
-    change_appearance = input("Would you like to customize your appearance? (Yes/No) ")
+    change_appearance = input("Would you like to customize your character? (Yes/No) ")
     if change_appearance.lower() == "yes":
         hair_color = input("What color is your hair? ")
         eye_color = input("What color are your eyes? ")
         gender = input("What is your gender? ")
         age = input("How old are you? ")
-        appearance = (f"{age} year old {gender} {player_role} named {player_name} with {hair_color} hair and {eye_color} eyes, existing within a {genre} world.")
-        generate_character_image(appearance, client)
+        appearance = (f"You are a {age} year old {gender} {player_role} named {player_name} with {hair_color} hair and {eye_color} eyes, existing within a {genre} world.")
     else:
         appearance = get_random_character(player_name, player_role, genre)
-        print(appearance)
-        generate_character_image(appearance, client)
+        print(f"You are a {appearance}")
     return appearance
 
 def main():
@@ -139,41 +187,71 @@ def main():
     text = Text("Welcome to Textfall", style="bold green", justify="center")
     console.print(Panel(text))
 
-    print("Type your actions and see how the story unfolds. Type quit to exit. \n")
-    
-    genre = get_genre()
-    if genre.lower() == "fantasy":
-        story_context = "You live in the kingdom of Eldravia, a lush and mountainous realm where the mists of of the peaks are said to carry the whispers of ancient gods, and the valleys are alive with bioluminescent flora that glow brighter under the gaze of the twin moons. Eldravia's heart lies in Veilspire, a city carved into a towering cliff, where the crystalline palace of the Crescent Throne houses a ruler whose mysterious lineage grants them the power to command the elements"
-    elif genre.lower() == "sci-fi":
-        story_context = "In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets."
-    elif genre.lower() == "realistic":
-        story_context = "The town of Maplebrook is a quiet suburban haven where every street feels like a scene from a postcard, lined with neatly trimmed hedges and mailboxes painted with personal touches. Its heart is the old-fashioned downtown, where a family-run diner, a cozy bookstore, and a quirky antique shop form the backdrop of everyday routines. Life here is slow and predictable, yet the bonds between neighbors and the small, heartfelt dramas of daily life give Maplebrook its charm and meaning."
-    elif genre.lower() == "quit":
-        print("Goodbye!")
-        return
+    state = load_game_state()
 
-    # player_character = character_creation(genre)
-    # with open("data/chat_history.md", "a") as file:
-    #         file.write(player_character + "\n")
-    print("You are now ready to begin your adventure!")
+    if state:
+        # loads previous game
+        story_context = state["story_context"]
+        player_character = state["player_character"]
+        chat_history = state["chat_history"]
+        genre = state["genre"]
+    else:
+        # start a new game 
+        print("Type your actions and see how the story unfolds. Type quit to exit. \n")
+    
+        genre = get_genre()
+        if genre.lower() == "fantasy":
+            story_context = "You live in the kingdom of Eldravia, a lush and mountainous realm where the mists of of the peaks are said to carry the whispers of ancient gods, and the valleys are alive with bioluminescent flora that glow brighter under the gaze of the twin moons. Eldravia's heart lies in Veilspire, a city carved into a towering cliff, where the crystalline palace of the Crescent Throne houses a ruler whose mysterious lineage grants them the power to command the elements"
+        elif genre.lower() == "sci-fi":
+            story_context = "In the galaxy of Kyntara, a coalition of alien species inhabits colossal space stations built around dying stars, harvesting their energy for survival. Among the stars, fleets of sentient ships wander aimlessly, their memories of ancient wars locked in cryptic data archives, waiting for the right mind to unlock their secrets."
+        elif genre.lower() == "realistic":
+            story_context = "The town of Maplebrook is a quiet suburban haven where every street feels like a scene from a postcard, lined with neatly trimmed hedges and mailboxes painted with personal touches. Its heart is the old-fashioned downtown, where a family-run diner, a cozy bookstore, and a quirky antique shop form the backdrop of everyday routines. Life here is slow and predictable, yet the bonds between neighbors and the small, heartfelt dramas of daily life give Maplebrook its charm and meaning."
+        elif genre.lower() == "quit":
+            print("Goodbye!")
+            return
+
+        player_character = character_creation(genre)
+        chat_history = []
+
+        character_image = generate_character_image(player_character, client)
+        character_image = save_image(character_image, "images")
+        with open("data/chat_history.md", "a") as file:
+                file.write(player_character + "\n")
+                file.write(f"![Image]({character_image})\n")
+        print("You are now ready to begin your adventure!")
 
     # generate_image(story_context, client)
 
     while True:
         console.print("\n" + story_context)
         console.print("\n" + get_random_prompt(genre))
-        player_input = input("\n What do you want to do? ")
+        player_input = input("\nWhat do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
             print("Goodbye!")
+            # delete chat history
             with open("data/chat_history.md", "w") as file:
                 file.write("")
+            # delete images folder
+            shutil.rmtree("images")
             break
+
+        if player_input.lower() == "save":
+            save_game_state({
+                "story_context": story_context,
+                "player_character": player_character,
+                "chat_history": chat_history,
+                "genre": genre
+            })
+            save_game_state(state)
+            continue
             
         story_context = generate_story_response(player_input, story_context, "data/chat_history.md")
 
         with open("data/chat_history.md", "a") as file:
             file.write(story_context + "\n")
+
+        chat_history.append(story_context)
 
 if __name__ == "__main__":
     main()

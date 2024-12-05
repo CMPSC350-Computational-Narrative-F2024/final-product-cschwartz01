@@ -15,6 +15,10 @@ semester with a meaningful discussion of how they relate to your final work. Her
 passages from both _your_ work _and_ the selected work to make this comparison (or 
 contrast!) clear.
 
+https://mlrobotics.wordpress.com/wp-content/uploads/2023/04/ml_paper_hui-cheuk-yin-lin-zhiwei.pdf
+https://en.wikipedia.org/wiki/AI_Dungeon 
+https://dang.ai/tool/ai-text-rpg-sagarpg 
+
 ## Describe your single largest success.
 
 TODO: Describe
