@@ -8,6 +8,7 @@ import json
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
+from rich.prompt import Prompt
 from rich.box import Box
 
 # Set up rich console
@@ -30,27 +31,27 @@ def load_file(filename: str) -> str:
     with open(filename, "r") as file:
         return file.read()
     
-def save_game_state(state):
-    '''Saves the game state to a JSON file.'''
-    with open(SAVE_FILE, "w") as file:
-        json.dump(state, file)
-    save_chat_history(state["chat_history"])
-    print("Game saved!")
+# def save_game_state(state):
+#     '''Saves the game state to a JSON file.'''
+#     with open(SAVE_FILE, "w") as file:
+#         json.dump(state, file)
+#     save_chat_history(state["chat_history"])
+#     print("Game saved!")
 
-def save_chat_history(chat_history):
-    '''Saves the chat history to a markdown file.'''
-    with open("data/chat_history.md", "w") as file:
-        file.writelines(chat_history)
+# def save_chat_history(chat_history):
+#     '''Saves the chat history to a markdown file.'''
+#     with open("data/chat_history.md", "w") as file:
+#         file.writelines(chat_history)
 
 def load_chat_history():
-    if os.path.exists("data/chat_history.md"):
-        with open("data/chat_history.md", "r") as file:
-            return file.readlines()
-    else: 
-        return [] # return empty list if file does not exist
+    # if os.path.exists("data/chat_history.md"):
+    with open("data/chat_history.md", "r") as file:
+        return file.read()
+    # else: 
+    #     return [] # return empty list if file does not exist
 
 def load_game_state():
-    '''Loads the game state from a JSON file.'''
+    '''Loads the chat history.'''
     if os.path.exists(SAVE_FILE):
         with open(SAVE_FILE, "r") as file:
             state = json.load(file)
@@ -89,7 +90,8 @@ def generate_story_response(player_input, story_context, chat_history):
     return result
 
 def get_genre() -> str:
-    genre = input("Would you like to play a fantasy, sci-fi, or realistic game? ")
+    genre = Prompt.ask("Would you like to play a fantasy, sci-fi, or realistic game?", choices=["fantasy", "sci-fi", "realistic"], show_choices=False)
+    console.print()
     return genre
 
 def get_random_character(player_name, player_role, genre):
@@ -157,13 +159,13 @@ def character_creation(genre):
     '''Creates a character based on the player's input.'''
     if genre.lower() == "fantasy":
         player_name = input("What is your name? ")
-        player_role = input("Would you like to be a wizard, knight, elf, bard, or rogue? ")
+        player_role = Prompt.ask("Would you like to be a wizard, knight, elf, bard, or rogue? ", choices=["wizard", "knight", "elf", "bard", "rogue"], show_choices=False)
     elif genre.lower() == "sci-fi": 
         player_name = input("What is your name? ")
-        player_role = input("Would you like to be a space pirate, starship pilot, scientist, rebel leader, cyborg, or engineer? ")
+        player_role = Prompt.ask("Would you like to be a space pirate, starship pilot, scientist, rebel leader, cyborg, or engineer? ", choices=["space pirate", "starship pilot", "scientist", "rebel leader", "cyborg", "engineer"], show_choices=False)
     elif genre.lower() == "realistic":          
         player_name = input("What is your name? ")
-        player_role = input("Would you like to be a barista, shopkeeper, teacher, librarian, or detective? ")
+        player_role = Prompt.ask("Would you like to be a barista, shopkeeper, teacher, librarian, or detective? ", choices=["barista", "shopkeeper", "teacher", "librarian", "detective"], show_choices=False)
     change_appearance = input("Would you like to customize your character? (Yes/No) ")
     if change_appearance.lower() == "yes":
         hair_color = input("What color is your hair? ")
@@ -181,20 +183,16 @@ def main():
 
     print()
     # title option 1
-    console.rule("[bold green]Welcome to Textfall", align = "center")
+    # console.rule("[bold green]Welcome to Textfall", align = "center")
 
     # title option 2
     text = Text("Welcome to Textfall", style="bold green", justify="center")
     console.print(Panel(text))
 
-    state = load_game_state()
-
-    if state:
-        # loads previous game
-        story_context = state["story_context"]
-        player_character = state["player_character"]
-        chat_history = state["chat_history"]
-        genre = state["genre"]
+    if load_chat_history() != "":
+        with open("data/chat_history.md", "r") as file:
+            chat_history = file.read()  
+            story_context = chat_history
     else:
         # start a new game 
         print("Type your actions and see how the story unfolds. Type quit to exit. \n")
@@ -213,18 +211,23 @@ def main():
         player_character = character_creation(genre)
         chat_history = []
 
-        character_image = generate_character_image(player_character, client)
-        character_image = save_image(character_image, "images")
+        # character_image = generate_character_image(player_character, client)
+        # character_image = save_image(character_image, "images")
         with open("data/chat_history.md", "a") as file:
-                file.write(player_character + "\n")
-                file.write(f"![Image]({character_image})\n")
-        print("You are now ready to begin your adventure!")
+                file.write(f"Character: {player_character} + \n")
+                # file.write(f"![Image]({character_image})\n")
+        print()
+        console.rule("[bold green]You are now ready to begin your adventure!")
 
     # generate_image(story_context, client)
 
     while True:
         console.print("\n" + story_context)
         console.print("\n" + get_random_prompt(genre))
+        with open("data/chat_history.md", "a") as file:
+                file.write(f"Genre: {genre}\n")
+                file.write(f"Story context: {story_context}\n")
+                file.write(f"Prompt: {get_random_prompt(genre)}\n")
         player_input = input("\nWhat do you want to do? ")
 
         if player_input.lower() in ["quit", "exit"]:
@@ -233,25 +236,19 @@ def main():
             with open("data/chat_history.md", "w") as file:
                 file.write("")
             # delete images folder
-            shutil.rmtree("images")
+            # shutil.rmtree("images")
             break
 
         if player_input.lower() == "save":
-            save_game_state({
-                "story_context": story_context,
-                "player_character": player_character,
-                "chat_history": chat_history,
-                "genre": genre
-            })
-            save_game_state(state)
-            continue
+            print("Game saved!")
+            break
             
         story_context = generate_story_response(player_input, story_context, "data/chat_history.md")
 
         with open("data/chat_history.md", "a") as file:
             file.write(story_context + "\n")
 
-        chat_history.append(story_context)
+        # chat_history.append(story_context)
 
 if __name__ == "__main__":
     main()
