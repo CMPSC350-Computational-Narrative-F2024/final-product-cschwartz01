@@ -2,11 +2,12 @@
 
 ## Final title
 
-TODO: Provide the final title
+Textfall
 
 ## Summary
 
 TODO: In no more than two (2) sentences, write a summary of what your work is "about."
+Textfall is a text-based adventure RPG that utilizes generative AI to create unique experiences for each user.
 
 ## Reference works
 
@@ -22,10 +23,12 @@ https://dang.ai/tool/ai-text-rpg-sagarpg
 ## Describe your single largest success.
 
 TODO: Describe
+Creating a functioning game that allows users to customize their character and has multiple starting options.
 
 ## Describe your single largest challenge or failure.
 
 TODO: Describe
+Creating the ability to save and come back to the game or "opening" an image in the terminal.
 
 ## The role of feedback
 
