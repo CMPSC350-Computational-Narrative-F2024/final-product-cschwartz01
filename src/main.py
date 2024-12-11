@@ -177,7 +177,7 @@ def main():
     character_image = save_image(character_image, "images")
     with open("data/chat_history.md", "a") as file:
         file.write(f"Character: {player_character}\n")
-        file.write(f"![Character Image]({character_image})\n")
+        file.write(f"\n![Character Image]({character_image})\n")
     print()
     console.rule("[bold green]You are now ready to begin your adventure!")
 
