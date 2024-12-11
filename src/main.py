@@ -103,6 +103,7 @@ def generate_image(description, client):
     )
     img_url = image_generator.data[0].url
     print(f"\nHere is an image: {img_url}")
+    return img_url
 
 def generate_character_image(appearance, client):
     '''Generates an image based on the given character appearance.'''

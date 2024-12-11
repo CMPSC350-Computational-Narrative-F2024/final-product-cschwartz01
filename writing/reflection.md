@@ -19,14 +19,19 @@ My work was inspired by the work we did in class with Twine along with similar A
 
 ## Describe your single largest success.
 
-TODO: Describe
 I would probably say that my largest success was the fact that I created a functioning game, one will multiple starting options and the ability for users to customize their characters. I had never made a game of any sort before, so I would say I'm pretty successful for my first attempt.
 
-### Example Output
+### Example Output 1
+This output shows how the user can customize their character
+![Ex Output 1](ex_output_1.png)
+
+### Example Output 2
+This output shows the general output from running the program, including user input
+![Ex Output 2A](ex_output_2A.png)
+![Ex Output 2B](ex_output_2B.png)
 
 ## Describe your single largest challenge or failure.
 
-TODO: Describe
 I would say that my largest challenge/failure would be not having an option for saving and coming back to the game or the fact that the images do not "open" in the terminal. I knew from the beginning that the images part would be an issue and unfortunately that is primarily due to the fact that this game is played within the terminal, so I am limited in what I can do/display. In terms of the actual coding, I had a lot of problems trying to create the ability to save the game and eventually decided that it was simply too much for me to try to figure out at this point in time, but it might be something that I come back if I continue this project outside of this class.
 
 ## The role of feedback
